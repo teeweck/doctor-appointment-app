@@ -19,6 +19,7 @@ const localizer = dateFnsLocalizer({
 export default function CalendarView({ doctorName, user }) {
   const [events, setEvents] = useState([]);
   const [view, setView] = useState(Views.WEEK);
+  const [date, setDate] = useState(new Date()); // Add this line
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [booking, setBooking] = useState(false);
   const [message, setMessage] = useState("");
@@ -134,7 +135,10 @@ export default function CalendarView({ doctorName, user }) {
         startAccessor="start"
         endAccessor="end"
         defaultView={view}
+        view={view} // Add this line
+        date={date} // Add this line
         onView={setView}
+        onNavigate={setDate} // Add this line
         style={{ height: 500 }}
         eventPropGetter={eventStyleGetter}
         onSelectEvent={handleSelectEvent}
