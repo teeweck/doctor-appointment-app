@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from app.models import Doctor, Appointment
+from app.models import Doctor, Appointment, User
 from app import db
 from datetime import datetime, time, timedelta
 
@@ -9,6 +9,11 @@ doctors_bp = Blueprint('doctors', __name__)
 def get_doctors():
     doctors = Doctor.query.all()
     return jsonify([{'id': d.id, 'name': d.name} for d in doctors])
+
+@doctors_bp.route('/api/users/', methods=['GET'])
+def get_users():
+    users = User.query.all()
+    return jsonify([{'id': d.id, 'name': d.name} for d in users])
 
 
 
@@ -51,6 +56,7 @@ def get_doctor_availability_by_name(doctor_name):
 # Book appointment (POST)
 @doctors_bp.route('/api/doctors/name/<string:doctor_name>/book', methods=['POST'])
 def book_appointment(doctor_name):
+    print("/book appointment called for doctor:", doctor_name)
     doctor = Doctor.query.filter_by(name=doctor_name).first()
     if not doctor:
         return jsonify({'error': 'Doctor not found'}), 404
