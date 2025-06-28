@@ -3,7 +3,7 @@ from app.models import Doctor, Appointment, User
 from app import db
 from datetime import datetime, time, timedelta
 
-from app.constants import DISPLAY_MONTHS_WORTH_OF_APPOINTMENTS, DOCTOR_WORKING_HOURS_START, DOCTOR_WORKING_HOURS_END, DOCTOR_BREAK_START, DOCTOR_BREAK_END, DOCTOR_WORKING_DAYS_PER_WEEK
+from app.constants import DISPLAY_MONTHS_WORTH_OF_APPOINTMENTS, DOCTOR_WORKING_HOURS_START, DOCTOR_WORKING_HOURS_END, DOCTOR_BREAK_START, DOCTOR_BREAK_END, DOCTOR_WORKING_DAYS_PER_WEEK, DOCTOR_SLOTS_PER_DAY, DOCTOR_MAX_SLOTS_PER_DAY
 
 doctors_bp = Blueprint('doctors', __name__)
 
@@ -75,11 +75,16 @@ def get_doctor_availability_by_name(doctor_name):
         date = today + timedelta(days=day_offset)
         # Only display appointments for doctor working n days a week
         # Assuming doctor works for n number of days from Mon inclusive
+        if DOCTOR_WORKING_DAYS_PER_WEEK > 7:
+            return jsonify({'error': 'Invalid number of working days per week'}), 400
         if date.weekday() >= DOCTOR_WORKING_DAYS_PER_WEEK:
             continue
         date_str = date.isoformat()
+        slots_added = 0
         for hour in range(DOCTOR_WORKING_HOURS_START, DOCTOR_WORKING_HOURS_END):
             for minute in [0, 30]:
+                if slots_added >= DOCTOR_SLOTS_PER_DAY or slots_added >= DOCTOR_MAX_SLOTS_PER_DAY:
+                    break
                 slot_time = time(hour, minute)
                 # Skip lunch break
                 if (hour >= DOCTOR_BREAK_START and hour < DOCTOR_BREAK_END):
@@ -99,6 +104,9 @@ def get_doctor_availability_by_name(doctor_name):
                     "start": f"{date_str}T{time_str}:00",
                     "end": f"{date_str}T{hour:02d}:{(minute+30)%60:02d}:00" if minute == 0 else f"{date_str}T{(hour+1):02d}:00:00"
                 })
+                slots_added += 1
+            if slots_added >= DOCTOR_SLOTS_PER_DAY:
+                break
 
     return jsonify(events)
 
