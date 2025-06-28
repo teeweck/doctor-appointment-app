@@ -31,7 +31,9 @@ def register():
 
     if is_doctor:
         print("doc signup\n")
-        user = Doctor(name=name, email=email, password=hashed_pw)
+        doctor = Doctor(name=name, email=email, password=hashed_pw)
+        db.session.add(doctor)
+        db.session.commit()
         user = User(name=name, email=email, password=hashed_pw, is_doctor=True)
         db.session.add(user)
         db.session.commit()
@@ -84,3 +86,17 @@ def delete_doctor(doctor_id):
     db.session.delete(doctor)
     db.session.commit()
     return jsonify({'message': 'Doctor deleted'}), 200
+
+# Delete all users (DELETE)
+@auth_bp.route('/api/users/delete/all', methods=['DELETE'])
+def delete_all_users():
+    User.query.delete()
+    db.session.commit()
+    return jsonify({'message': 'All users deleted'}), 200
+
+# Delete all doctors (DELETE)
+@auth_bp.route('/api/doctors/delete/all', methods=['DELETE'])
+def delete_all_doctors():
+    Doctor.query.delete()
+    db.session.commit()
+    return jsonify({'message': 'All doctors deleted'}), 200

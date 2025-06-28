@@ -24,3 +24,4 @@ class Appointment(db.Model):
     doctor_id = db.Column(db.Integer, db.ForeignKey('doctor.id'), nullable=False)
     date = db.Column(db.Date, nullable=False)
     time = db.Column(db.Time, nullable=False)
+    description = db.Column(db.String(MAX_STRING_LENGTH), nullable=True)  # Health issue description

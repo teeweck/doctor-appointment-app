@@ -23,6 +23,7 @@ export default function CalendarView({ doctorName, user }) {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [booking, setBooking] = useState(false);
   const [message, setMessage] = useState("");
+  const [description, setDescription] = useState("");
 
   useEffect(() => {
     if (!doctorName) return;
@@ -78,13 +79,19 @@ export default function CalendarView({ doctorName, user }) {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ date, time, patient_id: user.id }),
+          body: JSON.stringify({
+            date,
+            time,
+            patient_id: user.id,
+            description,
+          }),
         }
       );
       const data = await res.json();
       if (res.ok) {
         setMessage("Appointment booked!");
         setSelectedSlot(null);
+        setDescription("");
         // Refresh events
         fetch(
           `http://localhost:5000/api/doctors/name/${encodeURIComponent(
@@ -203,6 +210,26 @@ export default function CalendarView({ doctorName, user }) {
           <div>
             Book appointment for: <b>{selectedSlot.start.toLocaleString()}</b>
           </div>
+          {selectedSlot.status !== "booked" && (
+            <div style={{ margin: "0.5rem 0" }}>
+              <label>
+                Short description of health issue:
+                <input
+                  type="text"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  maxLength={120}
+                  style={{ width: "100%", marginTop: 4 }}
+                  placeholder="Describe your health issue (optional)"
+                />
+              </label>
+            </div>
+          )}
+          {selectedSlot.status === "booked" && selectedSlot.description && (
+            <div style={{ margin: "0.5rem 0", color: "#555" }}>
+              <b>Patient's description:</b> {selectedSlot.description}
+            </div>
+          )}
           <button
             onClick={handleBook}
             disabled={booking}

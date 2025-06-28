@@ -21,6 +21,7 @@ def get_doctors():
                     'patient_id': a.patient_id,
                     'date': a.date.strftime('%Y-%m-%d') if a.date else None,
                     'time': a.time.strftime('%H:%M:%S') if a.time else None
+                    # 'description': a.description if a.description else None  # Include description
                 }
                 for a in d.appointments
             ]
@@ -42,6 +43,7 @@ def get_users():
                     'id': a.id, 
                     'date': a.date.strftime('%Y-%m-%d') if a.date else None,
                     'time': a.time.strftime('%H:%M:%S') if a.time else None
+                    # 'description': a.description if a.description else None  # Include description
                 } for a in u.appointments]
         } for u in users
     ])
@@ -55,7 +57,8 @@ def get_appointments():
         'doctor_id': a.doctor_id,
         'patient_id': a.patient_id,
         'date': a.date.strftime("%Y-%m-%d") if a.date else None,
-        'time': a.time.strftime("%H:%M:%S") if a.time else None
+        'time': a.time.strftime("%H:%M:%S") if a.time else None,
+        'description': a.description  # Include description in API response
     } for a in appointments])
 
 
@@ -122,6 +125,7 @@ def book_appointment(doctor_name):
     date_str = data.get('date')  # e.g. '2025-06-27'
     time_str = data.get('time')  # e.g. '10:00'
     patient_id = data.get('patient_id')
+    description = data.get('description')  # Get description from request
     if not (date_str and time_str and patient_id):
         return jsonify({'error': 'Missing required fields'}), 400
 
@@ -145,7 +149,8 @@ def book_appointment(doctor_name):
         doctor_id=doctor.id,
         patient_id=patient_id,
         date=appt_date,
-        time=appt_time
+        time=appt_time,
+        description=description  # Save description
     )
     db.session.add(new_appt)
     db.session.commit()
@@ -162,3 +167,10 @@ def delete_appointment(appointment_id):
     db.session.delete(appt)
     db.session.commit()
     return jsonify({'message': 'Appointment deleted'}), 200
+
+# Delete all appointment (DELETE)
+@doctors_bp.route('/api/appointments/delete/all', methods=['DELETE'])
+def delete_all_appointments():
+    Appointment.query.delete()
+    db.session.commit()
+    return jsonify({'message': 'All appointments deleted'}), 200
