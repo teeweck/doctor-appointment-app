@@ -62,11 +62,6 @@ export default function CalendarView({ doctorName, user }) {
 
   // Handler for booking
   const handleBook = async () => {
-    // Uncomment this portion to enable the check for doctor
-    // if (!selectedSlot || user.is_doctor) {
-    //   setMessage("This feature is only available for patients.");
-    //   return;
-    // }
     if (!selectedSlot || !user) {
       setMessage("Error booking appointment. Please try again.");
       return;
@@ -74,7 +69,6 @@ export default function CalendarView({ doctorName, user }) {
     setBooking(true);
     setMessage("");
     try {
-      console.log("Booking slot:");
       const date = selectedSlot.start.toISOString().slice(0, 10);
       const time = selectedSlot.start.toTimeString().slice(0, 5);
       const res = await fetch(
@@ -127,7 +121,7 @@ export default function CalendarView({ doctorName, user }) {
       // Fetch all appointments for this user
       const res = await fetch(`http://localhost:5000/api/appointments/`);
       const allAppointments = await res.json();
-      // Find the appointment that matches the selected slot
+      // Find the appointment that matches the selected slot (30-min interval)
       const appt = allAppointments.find(
         (a) =>
           a.patient_id === user.id &&
@@ -144,7 +138,7 @@ export default function CalendarView({ doctorName, user }) {
         if (delRes.ok) {
           setMessage("Booking cancelled!");
           setSelectedSlot(null);
-          // Refresh events after cancellation
+          // Refresh events
           fetch(
             `http://localhost:5000/api/doctors/name/${encodeURIComponent(
               doctorName

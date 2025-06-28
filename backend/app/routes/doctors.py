@@ -3,6 +3,8 @@ from app.models import Doctor, Appointment, User
 from app import db
 from datetime import datetime, time, timedelta
 
+from app.constants import DISPLAY_MONTHS_WORTH_OF_APPOINTMENTS, DOCTOR_WORKING_HOURS_START, DOCTOR_WORKING_HOURS_END, DOCTOR_BREAK_START, DOCTOR_BREAK_END
+
 doctors_bp = Blueprint('doctors', __name__)
 
 # Get all doctors (GET)
@@ -66,31 +68,33 @@ def get_doctor_availability_by_name(doctor_name):
         return jsonify({'error': 'Doctor not found'}), 404
 
     events = []
-    start_hour = 9
-    end_hour = 17
     today = datetime.today().date()
 
-    for day_offset in range(5):
+    for day_offset in range(DISPLAY_MONTHS_WORTH_OF_APPOINTMENTS * 30):
         date = today + timedelta(days=day_offset)
         date_str = date.isoformat()
 
-        for hour in range(start_hour, end_hour):
-            slot_time = time(hour, 0)
-            time_str = f"{hour:02d}:00"
+        for hour in range(DOCTOR_WORKING_HOURS_START, DOCTOR_WORKING_HOURS_END):
+            for minute in [0, 30]:
+                slot_time = time(hour, minute)
+                # Skip lunch break
+                if (hour >= DOCTOR_BREAK_START and hour < DOCTOR_BREAK_END):
+                    continue
+                time_str = f"{hour:02d}:{minute:02d}"
 
-            blocked = Appointment.query.filter_by(
-                doctor_id=doctor.id,
-                date=date,
-                time=slot_time
-            ).first() is not None
+                blocked = Appointment.query.filter_by(
+                    doctor_id=doctor.id,
+                    date=date,
+                    time=slot_time
+                ).first() is not None
 
-            status = "booked" if blocked else "available"
-            events.append({
-                "title": "Booked" if blocked else "Available",
-                "status": status,
-                "start": f"{date_str}T{time_str}:00",
-                "end": f"{date_str}T{hour+1:02d}:00:00"
-            })
+                status = "booked" if blocked else "available"
+                events.append({
+                    "title": "Booked" if blocked else "Available",
+                    "status": status,
+                    "start": f"{date_str}T{time_str}:00",
+                    "end": f"{date_str}T{hour:02d}:{(minute+30)%60:02d}:00" if minute == 0 else f"{date_str}T{(hour+1):02d}:00:00"
+                })
 
     return jsonify(events)
 
