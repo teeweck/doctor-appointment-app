@@ -62,3 +62,25 @@ def login():
     })
 
     return jsonify({'access_token': access_token}), 200
+
+# Delete User based on user_id (DELETE)
+@auth_bp.route('/api/users/<int:user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    db.session.delete(user)
+    db.session.commit()
+    return jsonify({'message': 'User deleted'}), 200
+
+# Delete User based on doctor_id (DELETE)
+@auth_bp.route('/api/doctors/<int:doctor_id>', methods=['DELETE'])
+def delete_doctor(doctor_id):
+    doctor = Doctor.query.get(doctor_id)
+    if not doctor:
+        return jsonify({'error': 'Doctor not found'}), 404
+
+    db.session.delete(doctor)
+    db.session.commit()
+    return jsonify({'message': 'Doctor deleted'}), 200

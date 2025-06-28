@@ -9,14 +9,14 @@ class User(db.Model):
     email = db.Column(db.String(max_input_length), unique=True, nullable=False)
     password = db.Column(db.String(max_input_length), nullable=False)
     is_doctor = db.Column(db.Boolean, default=False)
-    appointments = db.relationship('Appointment', backref='patient', lazy=True)
+    appointments = db.relationship('Appointment', backref='patient', lazy='joined', cascade='all, delete-orphan')
 
 class Doctor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(max_input_length), nullable=False)
     email = db.Column(db.String(max_input_length), unique=True, nullable=False)
     password = db.Column(db.String(max_input_length), nullable=False)
-    appointments = db.relationship('Appointment', backref='doctor', lazy=True)
+    appointments = db.relationship('Appointment', backref='doctor', lazy='joined', cascade='all, delete-orphan')
 
 class Appointment(db.Model):
     id = db.Column(db.Integer, primary_key=True)

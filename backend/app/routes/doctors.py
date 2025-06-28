@@ -5,15 +5,56 @@ from datetime import datetime, time, timedelta
 
 doctors_bp = Blueprint('doctors', __name__)
 
+# Get all doctors (GET)
 @doctors_bp.route('/api/doctors/', methods=['GET'])
 def get_doctors():
     doctors = Doctor.query.all()
-    return jsonify([{'id': d.id, 'name': d.name} for d in doctors])
+    return jsonify([
+        {
+            'id': d.id,
+            'name': d.name,
+            'appointments': [
+                {
+                    'id': a.id,
+                    'patient_id': a.patient_id,
+                    'date': a.date.strftime('%Y-%m-%d') if a.date else None,
+                    'time': a.time.strftime('%H:%M:%S') if a.time else None
+                }
+                for a in d.appointments
+            ]
+        }
+        for d in doctors
+    ])
 
+# Get all users (GET)
 @doctors_bp.route('/api/users/', methods=['GET'])
 def get_users():
     users = User.query.all()
-    return jsonify([{'id': d.id, 'name': d.name} for d in users])
+    return jsonify([
+        {
+            'id': u.id, 
+            'name': u.name, 
+            'is_doctor': u.is_doctor, 
+            'appointments': [
+                {
+                    'id': a.id, 
+                    'date': a.date.strftime('%Y-%m-%d') if a.date else None,
+                    'time': a.time.strftime('%H:%M:%S') if a.time else None
+                } for a in u.appointments]
+        } for u in users
+    ])
+
+# Get all appointments (GET)
+@doctors_bp.route('/api/appointments/', methods=['GET'])
+def get_appointments():
+    appointments = Appointment.query.all()
+    return jsonify([{
+        'id': a.id,
+        'doctor_id': a.doctor_id,
+        'patient_id': a.patient_id,
+        'date': a.date.strftime("%Y-%m-%d") if a.date else None,
+        'time': a.time.strftime("%H:%M:%S") if a.time else None
+    } for a in appointments])
 
 
 
@@ -93,3 +134,15 @@ def book_appointment(doctor_name):
     db.session.add(new_appt)
     db.session.commit()
     return jsonify({'message': 'Appointment booked successfully'}), 201
+
+# Delete appointment (DELETE)
+@doctors_bp.route('/api/appointments/<int:appointment_id>/delete', methods=['DELETE'])
+def delete_appointment(appointment_id):
+    print("/delete appointment called for appointment_id:", appointment_id)
+    appt = Appointment.query.get(appointment_id)
+    if not appt:
+        return jsonify({'error': 'Appointment not found'}), 404
+
+    db.session.delete(appt)
+    db.session.commit()
+    return jsonify({'message': 'Appointment deleted'}), 200

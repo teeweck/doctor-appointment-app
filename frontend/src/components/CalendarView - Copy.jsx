@@ -26,20 +26,40 @@ export default function CalendarView({ doctorName, user }) {
 
   useEffect(() => {
     if (!doctorName) return;
-    fetch(
-      `http://localhost:5000/api/doctors/name/${encodeURIComponent(
-        doctorName
-      )}/availability`
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        const formatted = data.map((e) => ({
+    // Fetch both availability and appointments
+    Promise.all([
+      fetch(
+        `http://localhost:5000/api/doctors/name/${encodeURIComponent(
+          doctorName
+        )}/availability`
+      ).then((res) => res.json()),
+
+      fetch(`http://localhost:5000/api/appointments/`).then((res) =>
+        res.json()
+      ),
+    ]).then(([availability, appointments]) => {
+      // Map appointment slots to their IDs
+      const events = availability.map((slot) => {
+        if (slot.status === "booked") {
+          // Find the matching appointment
+          const appt = appointments.find(
+            (a) =>
+              a.doctor_id &&
+              a.date === slot.start.slice(0, 10) &&
+              a.time === slot.start.slice(11, 16) // match HH:MM
+          );
+          return { ...slot, id: appt ? appt.id : undefined };
+        }
+        return slot;
+      });
+      setEvents(
+        events.map((e) => ({
           ...e,
           start: new Date(e.start),
           end: new Date(e.end),
-        }));
-        setEvents(formatted);
-      });
+        }))
+      );
+    });
   }, [doctorName]);
 
   const eventStyleGetter = (event) => {
@@ -56,7 +76,15 @@ export default function CalendarView({ doctorName, user }) {
 
   // Handler for selecting a slot
   const handleSelectEvent = (event) => {
-    setSelectedSlot(event);
+    console.log("selected slot details:", selectedSlot);
+    // Find the matching event in the events array to get the appointment ID
+    const matched = events.find(
+      (e) =>
+        e.start.getTime() === event.start.getTime() &&
+        e.end.getTime() === event.end.getTime() &&
+        e.status === event.status
+    );
+    setSelectedSlot(matched ? { ...event, id: matched.id } : event);
     setMessage("");
   };
 
@@ -79,7 +107,7 @@ export default function CalendarView({ doctorName, user }) {
       const time = selectedSlot.start.toTimeString().slice(0, 5);
       const res = await fetch(
         `http://localhost:5000/api/doctors/name/${encodeURIComponent(
-          doctorName
+          doctorName // TODO: Use doctorID instead of name for booking
         )}/book`,
         {
           method: "POST",
@@ -124,49 +152,53 @@ export default function CalendarView({ doctorName, user }) {
     setBooking(true);
     setMessage("");
     try {
-      // Fetch all appointments for this user
-      const res = await fetch(`http://localhost:5000/api/appointments/`);
-      const allAppointments = await res.json();
-      // Find the appointment that matches the selected slot
-      const appt = allAppointments.find(
-        (a) =>
-          a.patient_id === user.id &&
-          a.date === selectedSlot.start.toISOString().slice(0, 10) &&
-          a.time.slice(0, 5) === selectedSlot.start.toTimeString().slice(0, 5)
-      );
-      if (appt) {
-        // Send DELETE request to cancel the appointment
-        const delRes = await fetch(
-          `http://localhost:5000/api/appointments/${appt.id}/delete`,
-          { method: "DELETE" }
-        );
-        const delData = await delRes.json();
-        if (delRes.ok) {
-          setMessage("Booking cancelled!");
-          setSelectedSlot(null);
-          // Refresh events after cancellation
-          fetch(
-            `http://localhost:5000/api/doctors/name/${encodeURIComponent(
-              doctorName
-            )}/availability`
-          )
-            .then((res) => res.json())
-            .then((data) => {
-              const formatted = data.map((e) => ({
-                ...e,
-                start: new Date(e.start),
-                end: new Date(e.end),
-              }));
-              setEvents(formatted);
-            });
-        } else {
-          setMessage(delData.error || "Cancellation failed.");
+      if (!selectedSlot.id) {
+        setMessage("No appointment ID found for this slot.");
+        setBooking(false);
+        return;
+      }
+      const res = await fetch(
+        `http://localhost:5000/api/appointments/${selectedSlot.id}/delete`,
+        {
+          method: "DELETE",
         }
+      );
+      const data = await res.json();
+      if (res.ok) {
+        setMessage("Booking cancelled!");
+        setSelectedSlot(null);
+        // Refresh events
+        Promise.all([
+          fetch(
+            `http://localhost:5000/api/doctors/name/${encodeURIComponent(doctorName)}/availability`
+          ).then((res) => res.json()),
+          fetch(`http://localhost:5000/api/appointments/`).then((res) => res.json()),
+        ]).then(([availability, appointments]) => {
+          const events = availability.map((slot) => {
+            if (slot.status === "booked") {
+              const appt = appointments.find(
+                (a) =>
+                  a.doctor_id &&
+                  a.date === slot.start.slice(0, 10) &&
+                  a.time === slot.start.slice(11, 16)
+              );
+              return { ...slot, id: appt ? appt.id : undefined };
+            }
+            return slot;
+          });
+          setEvents(
+            events.map((e) => ({
+              ...e,
+              start: new Date(e.start),
+              end: new Date(e.end),
+            }))
+          );
+        });
       } else {
-        setMessage("No matching appointment found for cancellation.");
+        setMessage(data.error || "Cancellation failed.");
       }
     } catch (e) {
-      setMessage("Failed to fetch user appointments.");
+      setMessage("Cancellation failed.");
     }
     setBooking(false);
   };
@@ -211,7 +243,7 @@ export default function CalendarView({ doctorName, user }) {
           </div>
           <button
             onClick={handleBook}
-            disabled={booking}
+            disabled={booking || selectedSlot.status === "booked"}
             style={{ marginTop: "0.5rem" }}
           >
             Book Slot

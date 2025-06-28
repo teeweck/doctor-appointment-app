@@ -21,7 +21,7 @@ start cmd /k "npm run dev"
 cd ..
 
 echo -------------------------------------
-echo ✅ Backend and frontend are running.
+echo Backend and frontend are running.
 echo Press [Ctrl+C] to stop servers manually.
 echo -------------------------------------
 ENDLOCAL
