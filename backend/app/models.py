@@ -21,6 +21,7 @@ class Doctor(db.Model):
 class Appointment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     patient_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    patient_name = db.Column(db.String(MAX_STRING_LENGTH), nullable=False)  # Patient's name for easier access
     doctor_id = db.Column(db.Integer, db.ForeignKey('doctor.id'), nullable=False)
     date = db.Column(db.Date, nullable=False)
     time = db.Column(db.Time, nullable=False)

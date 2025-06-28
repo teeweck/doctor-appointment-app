@@ -6,6 +6,7 @@ import startOfWeek from "date-fns/startOfWeek";
 import getDay from "date-fns/getDay";
 import { enUS } from "date-fns/locale";
 import "react-big-calendar/lib/css/react-big-calendar.css";
+import AppointmentDialog from "./AppointmentDialog";
 
 const locales = { "en-US": enUS };
 const localizer = dateFnsLocalizer({
@@ -19,7 +20,7 @@ const localizer = dateFnsLocalizer({
 export default function CalendarView({ doctorName, user }) {
   const [events, setEvents] = useState([]);
   const [view, setView] = useState(Views.WEEK);
-  const [date, setDate] = useState(new Date()); // Add this line
+  const [date, setDate] = useState(new Date());
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [booking, setBooking] = useState(false);
   const [message, setMessage] = useState("");
@@ -72,6 +73,7 @@ export default function CalendarView({ doctorName, user }) {
     try {
       const date = selectedSlot.start.toISOString().slice(0, 10);
       const time = selectedSlot.start.toTimeString().slice(0, 5);
+      console.log("Booking appointment for:", { date, time, user });
       const res = await fetch(
         `http://localhost:5000/api/doctors/name/${encodeURIComponent(
           doctorName
@@ -83,6 +85,7 @@ export default function CalendarView({ doctorName, user }) {
             date,
             time,
             patient_id: user.id,
+            patient_name: user.name, // Include patient's name
             description,
           }),
         }
@@ -188,76 +191,24 @@ export default function CalendarView({ doctorName, user }) {
         startAccessor="start"
         endAccessor="end"
         defaultView={view}
-        view={view} // Add this line
-        date={date} // Add this line
+        view={view}
+        date={date}
         onView={setView}
-        onNavigate={setDate} // Add this line
-        style={{ height: 500 }}
+        onNavigate={setDate}
+        style={{ height: 500, width: "100%" }}
         eventPropGetter={eventStyleGetter}
         onSelectEvent={handleSelectEvent}
       />
 
-      {selectedSlot && (
-        <div
-          style={{
-            marginTop: "1rem",
-            padding: "1rem",
-            border: "1px solid #ccc",
-            borderRadius: "8px",
-            background: "#f9f9f9",
-          }}
-        >
-          <div>
-            Book appointment for: <b>{selectedSlot.start.toLocaleString()}</b>
-          </div>
-          {selectedSlot.status !== "booked" && (
-            <div style={{ margin: "0.5rem 0" }}>
-              <label>
-                Short description of health issue:
-                <input
-                  type="text"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  maxLength={120}
-                  style={{ width: "100%", marginTop: 4 }}
-                  placeholder="Describe your health issue (optional)"
-                />
-              </label>
-            </div>
-          )}
-          {selectedSlot.status === "booked" && selectedSlot.description && (
-            <div style={{ margin: "0.5rem 0", color: "#555" }}>
-              <b>Patient's description:</b> {selectedSlot.description}
-            </div>
-          )}
-          <button
-            onClick={handleBook}
-            disabled={booking}
-            style={{ marginTop: "0.5rem" }}
-          >
-            Book Slot
-          </button>
-          {selectedSlot.status === "booked" && (
-            <button
-              onClick={handleCancelBooking}
-              disabled={booking}
-              style={{
-                marginLeft: "1rem",
-                background: "#ef4444",
-                color: "white",
-              }}
-            >
-              Cancel Booking
-            </button>
-          )}
-          <button
-            onClick={() => setSelectedSlot(null)}
-            style={{ marginLeft: "1rem" }}
-          >
-            Close
-          </button>
-        </div>
-      )}
+      <AppointmentDialog
+        selectedSlot={selectedSlot}
+        description={description}
+        setDescription={setDescription}
+        booking={booking}
+        handleBook={handleBook}
+        handleCancelBooking={handleCancelBooking}
+        setSelectedSlot={setSelectedSlot}
+      />
     </div>
   );
 }

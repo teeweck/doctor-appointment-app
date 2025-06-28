@@ -54,28 +54,74 @@ export default function Home({ user, onLogout }) {
           )}
         </div>
 
-        <div style={{ flex: 1 }}>
-          {users.length > 0 && (
-            <label>
-              Just for debugging, show Users:
-              <select
-                value={userName}
-                onChange={(e) => setUserName(e.target.value)}
-                style={{ marginLeft: "0.5rem" }}
-              >
-                {users.map((doc) => (
-                  <option key={doc.name} value={doc.name}>
-                    {doc.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-        </div>
-
-        <div style={{ flex: 2, marginLeft: "2rem" }}>
+        <div style={{ flex: 3, marginLeft: "2rem", minWidth: 1000 }}>
           <CalendarView doctorName={doctorName} user={user} />
         </div>
+      </div>
+
+      {/* Personality-based appointment display */}
+      <div style={{ flex: 2, marginLeft: "2rem" }}>
+        {user.is_doctor ? (
+          <>
+            <h4>Your Appointments</h4>
+            <table
+              border="1"
+              cellPadding="6"
+              style={{ width: "100%", background: "#f9f9f9" }}
+            >
+              <thead>
+                <tr>
+                  <th>Patient Name</th>
+                  <th>Description</th>
+                  <th>Date</th>
+                  <th>Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {doctors
+                  .find((doc) => doc.name === user.name)
+                  ?.appointments?.map((appt) => (
+                    <tr key={appt.id}>
+                      <td>{appt.patient_name || appt.patient_id}</td>
+                      <td>{appt.description || "-"}</td>
+                      <td>{appt.date}</td>
+                      <td>{appt.time?.slice(0, 5)}</td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </>
+        ) : (
+          <>
+            <h4>Your Appointments</h4>
+            <table
+              border="1"
+              cellPadding="6"
+              style={{ width: "100%", background: "#f9f9f9" }}
+            >
+              <thead>
+                <tr>
+                  <th>Doctor Name</th>
+                  <th>Date</th>
+                  <th>Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {doctors.flatMap((doc) =>
+                  doc.appointments
+                    ?.filter((appt) => appt.patient_id === user.id)
+                    .map((appt) => (
+                      <tr key={appt.id}>
+                        <td>{doc.name}</td>
+                        <td>{appt.date}</td>
+                        <td>{appt.time?.slice(0, 5)}</td>
+                      </tr>
+                    ))
+                )}
+              </tbody>
+            </table>
+          </>
+        )}
       </div>
     </div>
   );

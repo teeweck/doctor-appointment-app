@@ -56,6 +56,7 @@ def get_appointments():
         'id': a.id,
         'doctor_id': a.doctor_id,
         'patient_id': a.patient_id,
+        'patient_name': a.patient_name,  # Include patient's name in API response
         'date': a.date.strftime("%Y-%m-%d") if a.date else None,
         'time': a.time.strftime("%H:%M:%S") if a.time else None,
         'description': a.description  # Include description in API response
@@ -125,6 +126,7 @@ def book_appointment(doctor_name):
     date_str = data.get('date')  # e.g. '2025-06-27'
     time_str = data.get('time')  # e.g. '10:00'
     patient_id = data.get('patient_id')
+    patient_name = data.get('patient_name')  # Get patient's name from request
     description = data.get('description')  # Get description from request
     if not (date_str and time_str and patient_id):
         return jsonify({'error': 'Missing required fields'}), 400
@@ -148,6 +150,7 @@ def book_appointment(doctor_name):
     new_appt = Appointment(
         doctor_id=doctor.id,
         patient_id=patient_id,
+        patient_name=patient_name,
         date=appt_date,
         time=appt_time,
         description=description  # Save description

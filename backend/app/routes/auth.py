@@ -66,7 +66,7 @@ def login():
     return jsonify({'access_token': access_token}), 200
 
 # Delete User based on user_id (DELETE)
-@auth_bp.route('/api/users/<int:user_id>', methods=['DELETE'])
+@auth_bp.route('/api/users/<int:user_id>/delete', methods=['DELETE'])
 def delete_user(user_id):
     user = User.query.get(user_id)
     if not user:
@@ -77,7 +77,7 @@ def delete_user(user_id):
     return jsonify({'message': 'User deleted'}), 200
 
 # Delete User based on doctor_id (DELETE)
-@auth_bp.route('/api/doctors/<int:doctor_id>', methods=['DELETE'])
+@auth_bp.route('/api/doctors/<int:doctor_id>/delete', methods=['DELETE'])
 def delete_doctor(doctor_id):
     doctor = Doctor.query.get(doctor_id)
     if not doctor:
