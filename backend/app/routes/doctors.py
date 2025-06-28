@@ -3,7 +3,7 @@ from app.models import Doctor, Appointment, User
 from app import db
 from datetime import datetime, time, timedelta
 
-from app.constants import DISPLAY_MONTHS_WORTH_OF_APPOINTMENTS, DOCTOR_WORKING_HOURS_START, DOCTOR_WORKING_HOURS_END, DOCTOR_BREAK_START, DOCTOR_BREAK_END
+from app.constants import DISPLAY_MONTHS_WORTH_OF_APPOINTMENTS, DOCTOR_WORKING_HOURS_START, DOCTOR_WORKING_HOURS_END, DOCTOR_BREAK_START, DOCTOR_BREAK_END, DOCTOR_WORKING_DAYS_PER_WEEK
 
 doctors_bp = Blueprint('doctors', __name__)
 
@@ -70,10 +70,14 @@ def get_doctor_availability_by_name(doctor_name):
     events = []
     today = datetime.today().date()
 
+    # Only generate slots for working days
     for day_offset in range(DISPLAY_MONTHS_WORTH_OF_APPOINTMENTS * 30):
         date = today + timedelta(days=day_offset)
+        # Only display appointments for doctor working n days a week
+        # Assuming doctor works for n number of days from Mon inclusive
+        if date.weekday() >= DOCTOR_WORKING_DAYS_PER_WEEK:
+            continue
         date_str = date.isoformat()
-
         for hour in range(DOCTOR_WORKING_HOURS_START, DOCTOR_WORKING_HOURS_END):
             for minute in [0, 30]:
                 slot_time = time(hour, minute)
