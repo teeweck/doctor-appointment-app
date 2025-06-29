@@ -53,7 +53,7 @@ export default function AppointmentDialog({
           Book Slot
         </button>
       )}
-      {selectedSlot.status === "booked" && user.is_doctor && (
+      {selectedSlot.status === "booked" && (
         <button
           onClick={handleCancelBooking}
           disabled={booking}
