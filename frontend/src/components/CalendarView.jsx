@@ -143,8 +143,10 @@ export default function CalendarView({ doctorName, user }) {
         (a) =>
           a.patient_id === user.id &&
           a.date === selectedSlot.start.toISOString().slice(0, 10) &&
-          a.time.slice(0, 5) === selectedSlot.start.toTimeString().slice(0, 5)
+          a.time_start.slice(0, 5) ===
+            selectedSlot.start.toTimeString().slice(0, 5)
       );
+      console.log("Cancelling appointment:", appt);
       if (appt) {
         // Send DELETE request to cancel the appointment
         const delRes = await fetch(
