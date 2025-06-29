@@ -74,7 +74,8 @@ export default function Home({ user, onLogout }) {
                   <th>Patient Name</th>
                   <th>Description</th>
                   <th>Date</th>
-                  <th>Time</th>
+                  <th>Appt Start Time</th>
+                  <th>Appt End Time</th>
                 </tr>
               </thead>
               <tbody>
@@ -85,7 +86,8 @@ export default function Home({ user, onLogout }) {
                       <td>{appt.patient_name || appt.patient_id}</td>
                       <td>{appt.description || "-"}</td>
                       <td>{appt.date}</td>
-                      <td>{appt.time?.slice(0, 5)}</td>
+                      <td>{appt.time_start?.slice(0, 5)}</td>
+                      <td>{appt.time_end?.slice(0, 5)}</td>
                     </tr>
                   ))}
               </tbody>
@@ -103,7 +105,8 @@ export default function Home({ user, onLogout }) {
                 <tr>
                   <th>Doctor Name</th>
                   <th>Date</th>
-                  <th>Time</th>
+                  <th>Appt Start Time</th>
+                  <th>Appt End Time</th>
                 </tr>
               </thead>
               <tbody>
@@ -114,7 +117,8 @@ export default function Home({ user, onLogout }) {
                       <tr key={appt.id}>
                         <td>{doc.name}</td>
                         <td>{appt.date}</td>
-                        <td>{appt.time?.slice(0, 5)}</td>
+                        <td>{appt.time_start?.slice(0, 5)}</td>
+                        <td>{appt.time_end?.slice(0, 5)}</td>
                       </tr>
                     ))
                 )}

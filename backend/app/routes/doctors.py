@@ -23,7 +23,8 @@ def get_doctors():
                     'doctor_id': a.doctor_id,
                     'patient_name': a.patient_name,  # Include patient's name in API response
                     'date': a.date.strftime('%Y-%m-%d') if a.date else None,
-                    'time': a.time.strftime('%H:%M:%S') if a.time else None,
+                    'time_start': a.time_start.strftime('%H:%M:%S') if a.time_start else None,
+                    'time_end': a.time_end.strftime('%H:%M:%S') if a.time_end else None,
                     'description': a.description if a.description else None  # Include description
                 }
                 for a in d.appointments
@@ -45,7 +46,8 @@ def get_users():
                 {
                     'id': a.id, 
                     'date': a.date.strftime('%Y-%m-%d') if a.date else None,
-                    'time': a.time.strftime('%H:%M:%S') if a.time else None
+                    'time_start': a.time_start.strftime('%H:%M:%S') if a.time_start else None,
+                    'time_end': a.time_end.strftime('%H:%M:%S') if a.time_end else None,
                     # 'description': a.description if a.description else None  # Include description
                 } for a in u.appointments]
         } for u in users
@@ -61,7 +63,8 @@ def get_appointments():
         'patient_id': a.patient_id,
         'patient_name': a.patient_name,  # Include patient's name in API response
         'date': a.date.strftime("%Y-%m-%d") if a.date else None,
-        'time': a.time.strftime("%H:%M:%S") if a.time else None,
+        'time_start': a.time_start.strftime('%H:%M:%S') if a.time_start else None,
+        'time_end': a.time_end.strftime('%H:%M:%S') if a.time_end else None,
         'description': a.description  # Include description in API response
     } for a in appointments])
 
@@ -101,7 +104,7 @@ def get_doctor_availability_by_name(doctor_name):
                 blocked = Appointment.query.filter_by(
                     doctor_id=doctor.id,
                     date=date,
-                    time=slot_time
+                    time_start=slot_time
                 ).first() is not None
 
                 status = "booked" if blocked else "available"
@@ -127,11 +130,12 @@ def book_appointment(doctor_name):
 
     data = request.get_json()
     date_str = data.get('date')  # e.g. '2025-06-27'
-    time_str = data.get('time')  # e.g. '10:00'
+    time_start_str = data.get('time_start')  # e.g. '10:00'
+    time_end_str = data.get('time_end')  # e.g. '10:30'
     patient_id = data.get('patient_id')
     patient_name = data.get('patient_name')  # Get patient's name from request
     description = data.get('description')  # Get description from request
-    if not (date_str and time_str and patient_id):
+    if not (date_str and time_start_str and time_end_str and patient_id):
         return jsonify({'error': 'Missing required fields'}), 400
     
     if len(description) > MAX_STRING_LENGTH:
@@ -139,7 +143,8 @@ def book_appointment(doctor_name):
 
     try:
         appt_date = datetime.strptime(date_str, '%Y-%m-%d').date()
-        appt_time = datetime.strptime(time_str, '%H:%M').time()
+        appt_time_start = datetime.strptime(time_start_str, '%H:%M').time()
+        appt_time_end = datetime.strptime(time_end_str, '%H:%M').time()
     except Exception:
         return jsonify({'error': 'Invalid date or time format'}), 400
 
@@ -147,7 +152,8 @@ def book_appointment(doctor_name):
     existing = Appointment.query.filter_by(
         doctor_id=doctor.id,
         date=appt_date,
-        time=appt_time
+        time_start=appt_time_start,
+        time_end=appt_time_end
     ).first()
     if existing:
         return jsonify({'error': 'Slot already booked'}), 409
@@ -158,7 +164,8 @@ def book_appointment(doctor_name):
         patient_id=patient_id,
         patient_name=patient_name,
         date=appt_date,
-        time=appt_time,
+        time_start=appt_time_start,
+        time_end=appt_time_end,
         description=description  # Save description
     )
     db.session.add(new_appt)

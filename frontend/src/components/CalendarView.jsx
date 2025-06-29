@@ -72,8 +72,14 @@ export default function CalendarView({ doctorName, user }) {
     setMessage("");
     try {
       const date = selectedSlot.start.toISOString().slice(0, 10);
-      const time = selectedSlot.start.toTimeString().slice(0, 5);
-      console.log("Booking appointment for:", { date, time, user });
+      const time_start = selectedSlot.start.toTimeString().slice(0, 5);
+      const time_end = selectedSlot.end.toTimeString().slice(0, 5);
+      console.log("Booking appointment for:", {
+        date,
+        time_start,
+        time_end,
+        user,
+      });
       const res = await fetch(
         `http://localhost:5000/api/doctors/name/${encodeURIComponent(
           doctorName
@@ -83,7 +89,8 @@ export default function CalendarView({ doctorName, user }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             date,
-            time,
+            time_start,
+            time_end,
             patient_id: user.id,
             patient_name: user.name, // Include patient's name
             description,

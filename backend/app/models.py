@@ -24,5 +24,6 @@ class Appointment(db.Model):
     patient_name = db.Column(db.String(MAX_STRING_LENGTH), nullable=False)  # Patient's name for easier access
     doctor_id = db.Column(db.Integer, db.ForeignKey('doctor.id'), nullable=False)
     date = db.Column(db.Date, nullable=False)
-    time = db.Column(db.Time, nullable=False)
+    time_start = db.Column(db.Time, nullable=False)  # Start time of the appointment
+    time_end = db.Column(db.Time, nullable=False)  # End time of the appointment
     description = db.Column(db.String(MAX_STRING_LENGTH), nullable=True)  # Health issue description
