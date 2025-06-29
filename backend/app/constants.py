@@ -14,4 +14,4 @@ DOCTOR_BREAK_END = 13
 # Configurable values for doctor availability - adjusted based on the doctor's schedule
 DOCTOR_WORKING_DAYS_PER_WEEK = 7
 DOCTOR_SLOTS_PER_DAY = 16  # 30-minute slots
-DOCTOR_MAX_SLOTS_PER_DAY = (DOCTOR_WORKING_HOURS_END - DOCTOR_WORKING_HOURS_START) * 2  # 30-minute slots
+DOCTOR_MAX_SLOTS_PER_DAY = ((DOCTOR_WORKING_HOURS_END - DOCTOR_WORKING_HOURS_START) * 2) - ((DOCTOR_BREAK_END - DOCTOR_BREAK_START) * 2)  # 30-minute slots

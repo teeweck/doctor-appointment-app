@@ -139,13 +139,25 @@ export default function CalendarView({ doctorName, user }) {
       const res = await fetch(`http://localhost:5000/api/appointments/`);
       const allAppointments = await res.json();
       // Find the appointment that matches the selected slot (30-min interval)
-      const appt = allAppointments.find(
-        (a) =>
-          a.patient_id === user.id &&
-          a.date === selectedSlot.start.toISOString().slice(0, 10) &&
-          a.time_start.slice(0, 5) ===
-            selectedSlot.start.toTimeString().slice(0, 5)
-      );
+      const appt = allAppointments.find((a) => {
+        if (user.is_doctor) {
+          // Doctor: match by doctor_id and slot time
+          return (
+            a.doctor_id === user.id &&
+            a.date === selectedSlot.start.toISOString().slice(0, 10) &&
+            a.time_start.slice(0, 5) ===
+              selectedSlot.start.toTimeString().slice(0, 5)
+          );
+        } else {
+          // Patient: match by patient_id and slot time
+          return (
+            a.patient_id === user.id &&
+            a.date === selectedSlot.start.toISOString().slice(0, 10) &&
+            a.time_start.slice(0, 5) ===
+              selectedSlot.start.toTimeString().slice(0, 5)
+          );
+        }
+      });
       console.log("Cancelling appointment:", appt);
       if (appt) {
         // Send DELETE request to cancel the appointment
