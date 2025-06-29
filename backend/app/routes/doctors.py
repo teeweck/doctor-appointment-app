@@ -3,6 +3,7 @@ from app.models import Doctor, Appointment, User
 from app import db
 from datetime import datetime, time, timedelta
 
+from app.constants import MAX_STRING_LENGTH
 from app.constants import DISPLAY_MONTHS_WORTH_OF_APPOINTMENTS, DOCTOR_WORKING_HOURS_START, DOCTOR_WORKING_HOURS_END, DOCTOR_BREAK_START, DOCTOR_BREAK_END, DOCTOR_WORKING_DAYS_PER_WEEK, DOCTOR_SLOTS_PER_DAY, DOCTOR_MAX_SLOTS_PER_DAY
 
 doctors_bp = Blueprint('doctors', __name__)
@@ -19,9 +20,11 @@ def get_doctors():
                 {
                     'id': a.id,
                     'patient_id': a.patient_id,
+                    'doctor_id': a.doctor_id,
+                    'patient_name': a.patient_name,  # Include patient's name in API response
                     'date': a.date.strftime('%Y-%m-%d') if a.date else None,
-                    'time': a.time.strftime('%H:%M:%S') if a.time else None
-                    # 'description': a.description if a.description else None  # Include description
+                    'time': a.time.strftime('%H:%M:%S') if a.time else None,
+                    'description': a.description if a.description else None  # Include description
                 }
                 for a in d.appointments
             ]
@@ -130,6 +133,9 @@ def book_appointment(doctor_name):
     description = data.get('description')  # Get description from request
     if not (date_str and time_str and patient_id):
         return jsonify({'error': 'Missing required fields'}), 400
+    
+    if len(description) > MAX_STRING_LENGTH:
+        return jsonify({'error': f'Description exceeds maximum length of {MAX_STRING_LENGTH} characters'}), 400
 
     try:
         appt_date = datetime.strptime(date_str, '%Y-%m-%d').date()

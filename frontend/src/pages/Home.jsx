@@ -30,29 +30,29 @@ export default function Home({ user, onLogout }) {
       </p>
       <button onClick={onLogout}>Logout</button>
 
-      <h3>Just for debugging</h3>
-      <p>Number of doctors: {doctors.length}</p>
-      <p>Number of patients: {users.length}</p>
-
       <div style={{ display: "flex", marginTop: "2rem" }}>
-        <div style={{ flex: 1 }}>
-          {doctors.length > 0 && (
-            <label>
-              Select Doctor:
-              <select
-                value={doctorName}
-                onChange={(e) => setDoctorName(e.target.value)}
-                style={{ marginLeft: "0.5rem" }}
-              >
-                {doctors.map((doc) => (
-                  <option key={doc.name} value={doc.name}>
-                    {doc.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-        </div>
+        {!user.is_doctor && (
+          <>
+            <div style={{ flex: 1 }}>
+              {doctors.length > 0 && (
+                <label>
+                  Select Doctor:
+                  <select
+                    value={doctorName}
+                    onChange={(e) => setDoctorName(e.target.value)}
+                    style={{ marginLeft: "0.5rem" }}
+                  >
+                    {doctors.map((doc) => (
+                      <option key={doc.name} value={doc.name}>
+                        {doc.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+            </div>
+          </>
+        )}
 
         <div style={{ flex: 3, marginLeft: "2rem", minWidth: 1000 }}>
           <CalendarView doctorName={doctorName} user={user} />
@@ -63,7 +63,7 @@ export default function Home({ user, onLogout }) {
       <div style={{ flex: 2, marginLeft: "2rem" }}>
         {user.is_doctor ? (
           <>
-            <h4>Your Appointments</h4>
+            <h4>Your Appointments (refresh to see the latest updates)</h4>
             <table
               border="1"
               cellPadding="6"
@@ -93,7 +93,7 @@ export default function Home({ user, onLogout }) {
           </>
         ) : (
           <>
-            <h4>Your Appointments</h4>
+            <h4>Your Appointments (refresh to see the latest updates)</h4>
             <table
               border="1"
               cellPadding="6"

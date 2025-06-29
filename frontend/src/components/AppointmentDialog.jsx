@@ -8,6 +8,7 @@ export default function AppointmentDialog({
   handleBook,
   handleCancelBooking,
   setSelectedSlot,
+  user,
 }) {
   if (!selectedSlot) return null;
   return (
@@ -23,7 +24,7 @@ export default function AppointmentDialog({
       <div>
         Book appointment for: <b>{selectedSlot.start.toLocaleString()}</b>
       </div>
-      {selectedSlot.status !== "booked" && (
+      {selectedSlot.status !== "booked" && !user.is_doctor && (
         <div style={{ margin: "0.5rem 0" }}>
           <label>
             Short description of health issue:
@@ -43,14 +44,16 @@ export default function AppointmentDialog({
           <b>Patient's description:</b> {selectedSlot.description}
         </div>
       )}
-      <button
-        onClick={handleBook}
-        disabled={booking}
-        style={{ marginTop: "0.5rem" }}
-      >
-        Book Slot
-      </button>
-      {selectedSlot.status === "booked" && (
+      {!user.is_doctor && (
+        <button
+          onClick={handleBook}
+          disabled={booking}
+          style={{ marginTop: "0.5rem" }}
+        >
+          Book Slot
+        </button>
+      )}
+      {selectedSlot.status === "booked" && user.is_doctor && (
         <button
           onClick={handleCancelBooking}
           disabled={booking}

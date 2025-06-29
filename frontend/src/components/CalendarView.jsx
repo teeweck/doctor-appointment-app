@@ -208,6 +208,7 @@ export default function CalendarView({ doctorName, user }) {
         handleBook={handleBook}
         handleCancelBooking={handleCancelBooking}
         setSelectedSlot={setSelectedSlot}
+        user={user}
       />
     </div>
   );
