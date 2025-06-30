@@ -13,7 +13,15 @@ A full-stack web application for booking and managing doctor appointments. Built
 
 ## Running instructions
 
-You can use the provided "run.bat" script from the project root to start the backend and frontend.
+Prerequisites:
+- Python 3.x installed
+- Node.js (v16 or later) and npm installed
+
+If running for the first time, run the following commands:
+1. cd backend
+2. python init_db.py
+
+You can use the provided "run.bat" script from the project root to start the backend and frontend. 
 
 ## Configurable values
 
@@ -28,5 +36,14 @@ You can use the provided "run.bat" script from the project root to start the bac
 | DOCTOR_BREAK_END             | 13            | End hour of doctor's break (24h format)        |
 
 ## Key assumptions
+- All doctors have the same working schedule
+    - The number of working days are counted up from monday and their non-working days are at the end of the week.
+    - The number of appointment slots per day are counted from their starting hour and excluding a break for lunch.
+    - Appointment slots are 30 minutes long.
+- The default configuration is used unless overridden in the /backend/app/constants.py file.
 
 ## Future enhancements
+- "Forget password" button and mechanism to gain access to their account if the user has forgotten their password
+- Patients and doctors can select cumulative slots for longer appointments. i.e. Select a 1 hour timeslot for an appointment
+- More customisable appointment time slots for doctors i.e. Different doctors have different timeslots and individual doctors can set their schedule in the UI
+- Send appointment reminders
